@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vibe App</title>
+    <meta name="description" content="Base HTML template for vibe-app." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <canvas id="bg" aria-hidden="true"></canvas>
+    <div class="container">
+      <header class="header">
+        <h1 class="title">Vibe App</h1>
+        <p class="subtitle">
+          Base HTML is ready. Edit <code>app.js</code> to start.
+        </p>
+      </header>
+
+      <main class="card">
+        <div class="row">
+          <label class="label" for="name">Your name</label>
+          <input
+            id="name"
+            class="input"
+            placeholder="Type here…"
+            autocomplete="name"
+          />
+        </div>
+
+        <div class="row">
+          <button id="btn" class="button" type="button">ACTIVATE VIBE</button>
+          <span id="output" class="output" aria-live="polite"></span>
+        </div>
+      </main>
+
+      <footer class="footer">
+        <span>Open <code>index.html</code> in a browser.</span>
+      </footer>
+    </div>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
