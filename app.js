@@ -70,6 +70,8 @@ nameInput?.addEventListener("keydown", (e) => {
 if (canvas instanceof HTMLCanvasElement && ctx) {
   const DPR = Math.min(2, window.devicePixelRatio || 1);
   const particles = [];
+  const constellations = [];
+  let nextParticleId = 1;
   const particleCount = Math.max(
     55,
     Math.min(110, Math.floor((innerWidth * innerHeight) / 18000)),
@@ -99,9 +101,12 @@ if (canvas instanceof HTMLCanvasElement && ctx) {
 
   function spawnParticles() {
     particles.length = 0;
+    constellations.length = 0;
+    nextParticleId = 1;
     for (let i = 0; i < particleCount; i++) {
       const startHue = Math.random() < 0.55 ? 290 : 190; // purple / cyan
       particles.push({
+        id: nextParticleId++,
         x: rand(0, innerWidth),
         y: rand(0, innerHeight),
         vx: rand(-0.35, 0.35),
@@ -109,8 +114,44 @@ if (canvas instanceof HTMLCanvasElement && ctx) {
         r: rand(1.1, 2.3),
         hue: startHue,
         targetHue: startHue,
+        isSuperstar: false,
       });
     }
+  }
+
+  function addConstellationLinksFrom(superstar, count = 3) {
+    const candidates = [];
+    for (const p of particles) {
+      if (p === superstar) continue;
+      const dx = p.x - superstar.x;
+      const dy = p.y - superstar.y;
+      candidates.push({ p, d2: dx * dx + dy * dy });
+    }
+
+    candidates.sort((a, b) => a.d2 - b.d2);
+    const picked = candidates.slice(0, Math.min(count, candidates.length));
+
+    for (const { p } of picked) {
+      constellations.push({ a: superstar, b: p });
+    }
+  }
+
+  function spawnSuperstarAt(x, y) {
+    const startHue = 50; // warm / bright
+    const superstar = {
+      id: nextParticleId++,
+      x,
+      y,
+      vx: rand(-0.22, 0.22),
+      vy: rand(-0.22, 0.22),
+      r: rand(4.2, 5.6),
+      hue: startHue,
+      targetHue: startHue,
+      isSuperstar: true,
+    };
+
+    particles.push(superstar);
+    addConstellationLinksFrom(superstar, 3);
   }
 
   function randomNeonHue() {
@@ -148,6 +189,13 @@ if (canvas instanceof HTMLCanvasElement && ctx) {
   function onMouseLeave() {
     mouse.tx = null;
     mouse.ty = null;
+  }
+
+  function onCanvasPointerDown(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    spawnSuperstarAt(x, y);
   }
 
   function step() {
@@ -193,6 +241,26 @@ if (canvas instanceof HTMLCanvasElement && ctx) {
       if (p.y > h + 20) p.y = -20;
     }
 
+    // Permanent constellations (from Superstars)
+    for (const link of constellations) {
+      const a = link.a;
+      const b = link.b;
+      if (!a || !b) continue;
+
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      const dist = Math.hypot(dx, dy);
+      const alpha = Math.min(0.9, 0.25 + dist / 900);
+      const hue = 55; // warm starlight
+
+      ctx.strokeStyle = `hsla(${hue}, 100%, 78%, ${alpha})`;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+
     // Links
     for (let i = 0; i < particles.length; i++) {
       const a = particles[i];
@@ -216,10 +284,21 @@ if (canvas instanceof HTMLCanvasElement && ctx) {
 
     // Dots
     for (const p of particles) {
-      ctx.fillStyle = `hsla(${p.hue}, 100%, 70%, 0.9)`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
+      if (p.isSuperstar) {
+        ctx.save();
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = "rgba(255, 245, 200, 0.9)";
+        ctx.fillStyle = `hsla(55, 100%, 82%, 1)`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      } else {
+        ctx.fillStyle = `hsla(${p.hue}, 100%, 70%, 0.9)`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
     requestAnimationFrame(step);
@@ -229,10 +308,12 @@ if (canvas instanceof HTMLCanvasElement && ctx) {
   spawnParticles();
   window.addEventListener("resize", () => {
     resize();
-    spawnParticles();
   });
   window.addEventListener("mousemove", onMouseMove, { passive: true });
   window.addEventListener("mouseleave", onMouseLeave, { passive: true });
+  canvas.addEventListener("pointerdown", onCanvasPointerDown, {
+    passive: true,
+  });
 
   requestAnimationFrame(step);
 }
