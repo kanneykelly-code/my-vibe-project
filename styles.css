@@ -57,7 +57,7 @@ body {
   color: var(--text);
   display: grid;
   place-items: center;
-  padding: 28px 16px;
+  padding: 28px 16px 64px;
 }
 
 #bg {
@@ -180,8 +180,7 @@ body {
   padding: 11px 16px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  /* color: rgba(6, 7, 18, 0.92); */
-  color: lime;
+  color: rgba(6, 7, 18, 0.92);
   background: linear-gradient(90deg, var(--purple), var(--cyan));
   cursor: pointer;
   box-shadow:
@@ -213,8 +212,32 @@ body {
 }
 
 .footer {
-  color: var(--muted);
-  font-size: 14px;
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 14px;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  color: rgba(245, 247, 255, 0.62);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-shadow:
+    0 0 14px rgba(0, 229, 255, 0.18),
+    0 0 18px rgba(189, 0, 255, 0.12);
+}
+
+.footer__name {
+  background: linear-gradient(
+    90deg,
+    rgba(189, 0, 255, 0.9),
+    rgba(0, 229, 255, 0.9)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.22));
 }
 
 code {
