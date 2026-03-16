@@ -72,6 +72,7 @@ if (canvas instanceof HTMLCanvasElement && ctx) {
   const particles = [];
   const constellations = [];
   let nextParticleId = 1;
+  let gravityPulse = null;
   const particleCount = Math.max(
     55,
     Math.min(110, Math.floor((innerWidth * innerHeight) / 18000)),
@@ -196,11 +197,22 @@ if (canvas instanceof HTMLCanvasElement && ctx) {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     spawnSuperstarAt(x, y);
+    gravityPulse = {
+      x,
+      y,
+      start: performance.now(),
+      duration: 1000,
+    };
   }
 
   function step() {
     const w = innerWidth;
     const h = innerHeight;
+    const now = performance.now();
+
+    if (gravityPulse && now - gravityPulse.start > gravityPulse.duration) {
+      gravityPulse = null;
+    }
 
     if (mouse.tx != null && mouse.ty != null) {
       mouse.x += (mouse.tx - mouse.x) * 0.08;
@@ -229,6 +241,18 @@ if (canvas instanceof HTMLCanvasElement && ctx) {
       const influence = Math.max(0, 1 - d2 / (220 * 220));
       p.vx += (dx / 220) * influence * 0.012;
       p.vy += (dy / 220) * influence * 0.012;
+
+      if (gravityPulse) {
+        const gdx = gravityPulse.x - p.x;
+        const gdy = gravityPulse.y - p.y;
+        const gd2 = gdx * gdx + gdy * gdy;
+        const maxRadius = 260;
+        const falloff = Math.max(0, 1 - gd2 / (maxRadius * maxRadius));
+        const life = 1 - (now - gravityPulse.start) / gravityPulse.duration;
+        const strength = 0.12 * falloff * Math.max(0, life);
+        p.vx += (gdx / maxRadius) * strength;
+        p.vy += (gdy / maxRadius) * strength;
+      }
 
       p.x += p.vx * speed;
       p.y += p.vy * speed;
