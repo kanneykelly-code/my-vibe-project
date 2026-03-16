@@ -1,0 +1,17 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Runtime / tooling
+node_modules/
+dist/
+build/
+
